@@ -1,1 +1,1 @@
-# IN4200-PageRank
+# IN4200
