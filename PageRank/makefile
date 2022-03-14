@@ -4,4 +4,6 @@ compile:
 	gcc-11 -Wall -fopenmp -o main.x main.c
 
 execute:
-	./main.x "test.txt" 1. 0.01 10
+	#filename -- d -- epsilon -- n
+	./main.x "100nodes_graphs.txt" 1. 1e-6 8
+	

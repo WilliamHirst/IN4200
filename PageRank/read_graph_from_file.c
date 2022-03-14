@@ -17,6 +17,7 @@
         if (i == 1) fscanf(fp, " %*s %*s %d %*s %d", N, &edges);
     }
     printf("Number of nodes: %d --- Number of edges: %d\n", *N, edges);
+    printf("- - - - - - - - - - - - - - - -\n");
 
     *col_idx = malloc(edges*sizeof(int));
     *row_ptr = malloc((*N+1)*sizeof(int));
@@ -60,7 +61,8 @@
     }    
     fclose (fp);
 
-    printf("Nodes and connections loaded.\n");
+    printf("Hyperlink matrix built: Format -> CRS.\n");
+    printf("- - - - - - - - - - - - - - - -\n");
     
     
     free(col_counter);
