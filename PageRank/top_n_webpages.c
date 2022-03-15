@@ -13,32 +13,45 @@ void top_n_webpages (int N, double *scores, int n){
     size_t j;
     for (int i = 0; i < N; i++) perm[i] = i;
     //Sort array.
-
-    for (size_t i = 0; i < N; i++)
-    {   
-        //Odd
-        if(i % 2 != 0){
-            for (j = 0; j < N/2; j++)
+    int changed_odd = 0;
+    int changed_even = 0;
+    int N_2 = N/2;
+    int r = N%2 - 1;
+    #pragma omp parallel 
+    {
+        for (size_t i = 0; i < N; i++)
+        {   
+            //Odd
+            #pragma omp for reduction(+:changed_odd)
+            for (j = 0; j < N_2; j++)
             {
                 indx_1 = 2*j;
                 indx_2 = 2*j+1;
                 if (scores[indx_1] < scores[indx_2]){
                     swapI(&perm[indx_1], &perm[indx_2] );
                     swapD(&scores[indx_1], &scores[indx_2] );
+                    changed_odd = 1;
                 }
-            } 
-            
-        }
-        //Even
-        else{
-            for (j = 1; j < N/2; j++)
+            }  
+            //Even
+            #pragma omp for reduction(+:changed_even)
+            for (j = 0; j < N_2 + r; j++)
             {
-                indx_1 = 2*j-1;
-                indx_2 = 2*j;
+                indx_1 = 2*j+1;
+                indx_2 = 2*j+2;
                 if (scores[indx_1] < scores[indx_2]){
                     swapI(&perm[indx_1], &perm[indx_2] );
                     swapD(&scores[indx_1], &scores[indx_2] );
+                    changed_odd = 1;
                 }
+            }
+            if (!changed_odd && !changed_even) {
+                break;
+            }
+            #pragma omp barrier
+            #pragma omp single
+            {
+                changed_odd = changed_even = 0;
             }
         }
     }

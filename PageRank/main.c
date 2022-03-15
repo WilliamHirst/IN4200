@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
     read_graph_from_file(filename, &N, &row_ptr, &col_idx, &val);
 
     double *scores = malloc(N*sizeof(double)); 
-    //memset(scores , (double )1./N, N*sizeof(double));
+    
     for (size_t i = 0; i < N; i++) scores[i] = (double)1./N;
     
     PageRank_iterations(N, row_ptr,  col_idx,  val, d, epsilon, scores);
