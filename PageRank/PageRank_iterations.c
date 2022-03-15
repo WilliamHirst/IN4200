@@ -3,15 +3,20 @@
 void PageRank_iterations(int N, int *row_ptr, int *col_idx, double *val, 
                          double d, double epsilon, double *scores) {
 
-    int *L = calloc(0, N*sizeof(int));
+  
+    //int *L = calloc(0, N*sizeof(int));
+    int *L = malloc(N*sizeof(int));
+    memset(L , 0, N*sizeof(int));
     int edges = row_ptr[N];
     int nr_dang = N;
     
+
     for (size_t i = 0; i < edges; i++)
     {
         L[col_idx[i]] = 1;
         
     }
+    
     
     for (size_t i = 0; i < N; i++)
     {   
@@ -30,7 +35,7 @@ void PageRank_iterations(int N, int *row_ptr, int *col_idx, double *val,
             counter ++;
         }
     }
-
+    free(L);
     double max_diff = epsilon*2;
     double current_max = 10;
     double cur_diff = 0.0;
@@ -70,19 +75,9 @@ void PageRank_iterations(int N, int *row_ptr, int *col_idx, double *val,
     else printf("Threshold reached after  %d iterations. \n", counter);
     printf("- - - - - - - - - - - - - - - -\n");
     memcpy(scores, prev_score, N*sizeof(double));
-    
-    //free(cur_score);
-    //free(prev_score);
-    //free(dang_indx);
-    //free(L);
-    free(row_ptr);
-    free(col_idx);
-    free(val);
-        
+ 
+    free(dang_indx);
+    free(cur_score);
+    free(prev_score);
 
-
-
-    
-
-        
 }
