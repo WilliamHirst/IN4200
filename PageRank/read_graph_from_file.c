@@ -25,8 +25,6 @@
     *row_ptr = malloc((*N+1)*sizeof(int));
     *val = malloc(edges*sizeof(double));
 
-    
-
     int counter, c_indx, r_indx;
     double *col_counter = malloc(*N*sizeof(double));
     int *row_counter = malloc((*N+1)*sizeof(int));
@@ -39,18 +37,12 @@
     memset(*val, 0.,  edges*sizeof(double));
     memset(added_rows, 0.,  *N*sizeof(int));
     memset(row_counter, 0.,  (*N+1)*sizeof(int));
+        
     
-
-    
-    
-    counter = 0;
     while ((fscanf(fp,"%d %d", &c_indx, &r_indx)) != EOF) {
         col_counter[c_indx] ++;
         row_counter[r_indx] ++;
-        counter += 1;
-    }
-    
-    
+    }    
 
     (*row_ptr)[0] = 0;
 
@@ -58,8 +50,6 @@
     {
         (*row_ptr)[i] = (*row_ptr)[i-1] + row_counter[i-1];
     }
-
-   
 
     (*row_ptr)[*N] = edges;
 
@@ -79,12 +69,10 @@
         added_rows[r_indx] ++;
         counter ++;
     }    
-    
-
     fclose (fp);
 
     printf("Hyperlink matrix built: Format -> CRS.\n");
-    
+
     printf("- - - - - - - - - - - - - - - - - -\n");
     
     

@@ -5,5 +5,5 @@ compile:
 
 execute:
 	#filename -- d -- epsilon -- n
-	./main.x "100nodes_graphs.txt" 1. 1e-6 8
+	./main.x "web-Stanford_p.txt" 0.85 1e-6 10
 	

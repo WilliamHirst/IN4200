@@ -55,9 +55,9 @@ void top_n_webpages (int N, double *scores, int n){
             }
         }
     }
-    printf("-----------------------------------\n");
-    printf("---------* Highest scores *--------\n");
-    printf("-----------------------------------\n");
+    printf("----------------------------------\n");
+    printf("--------* Highest scores *--------\n");
+    printf("----------------------------------\n");
 
     for (size_t i = 0; i < n; i++)
     {
