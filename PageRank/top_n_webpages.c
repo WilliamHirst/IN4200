@@ -22,7 +22,7 @@ void top_n_webpages (int N, double *scores, int n){
         for (size_t i = 0; i < N; i++)
         {   
             //Odd
-            #pragma omp for reduction(+:changed_odd)
+            #pragma omp for reduction(+:changed_odd) private(indx_1,indx_2) 
             for (j = 0; j < N_2; j++)
             {
                 indx_1 = 2*j;
@@ -34,7 +34,7 @@ void top_n_webpages (int N, double *scores, int n){
                 }
             }  
             //Even
-            #pragma omp for reduction(+:changed_even)
+            #pragma omp for reduction(+:changed_even) private(indx_1,indx_2) 
             for (j = 0; j < N_2 + r; j++)
             {
                 indx_1 = 2*j+1;
@@ -55,9 +55,9 @@ void top_n_webpages (int N, double *scores, int n){
             }
         }
     }
-    printf("-------------------------------\n");
-    printf("---------Highest scores--------\n");
-    printf("-------------------------------\n");
+    printf("-----------------------------------\n");
+    printf("---------* Highest scores *--------\n");
+    printf("-----------------------------------\n");
 
     for (size_t i = 0; i < n; i++)
     {

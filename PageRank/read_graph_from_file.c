@@ -84,7 +84,8 @@
     fclose (fp);
 
     printf("Hyperlink matrix built: Format -> CRS.\n");
-    printf("- - - - - - - - - - - - - - - -\n");
+    
+    printf("- - - - - - - - - - - - - - - - - -\n");
     
     
     free(col_counter);
