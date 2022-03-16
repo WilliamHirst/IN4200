@@ -24,6 +24,8 @@ int main(int argc, char* argv[]){
     printf("- - - - - - - - - - - - - - - -\n");
     read_graph_from_file(filename, &N, &row_ptr, &col_idx, &val);
 
+    if(n>N) memcpy(&n,&N, sizeof(int));
+
     double *scores = malloc(N*sizeof(double)); 
     
     for (size_t i = 0; i < N; i++) scores[i] = (double)1./N;
