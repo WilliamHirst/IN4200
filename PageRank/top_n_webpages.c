@@ -17,7 +17,7 @@ void top_n_webpages (int N, double *scores, int n){
     int changed_even = 0;
     int N_2 = N/2;
     int r = N%2 - 1;
-    #pragma omp parallel 
+    #pragma omp parallel if (N>1000)
     {
         for (size_t i = 0; i < N; i++)
         {   

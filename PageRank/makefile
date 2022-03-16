@@ -5,5 +5,5 @@ compile:
 
 execute:
 	#filename -- d -- epsilon -- n
-	./main.x "web-Stanford_p.txt" 0.85 1e-6 10
+	./main.x "test.txt" 0.85 1e-8 8
 	
