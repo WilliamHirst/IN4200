@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <math.h>
 
 
 
@@ -8,7 +8,7 @@
     FILE *fp;
     int edges;
     char *line  = NULL;
-    size_t size_line = 32;
+    size_t size_line = 0;
     
     fp = fopen(filename, "r");
 
@@ -26,7 +26,7 @@
     *val = malloc(edges*sizeof(double));
 
     int counter, c_indx, r_indx;
-    double *col_counter = malloc(*N*sizeof(double));
+    long double *col_counter = malloc(*N*sizeof(long double));
     int *row_counter = malloc((*N+1)*sizeof(int));
     int *index = malloc(edges*sizeof(int));
     int *added_rows = malloc(*N*sizeof(int));
@@ -34,10 +34,10 @@
 
     memset(*col_idx , 0, edges*sizeof(int));
     memset(*row_ptr, 0, (*N+1)*sizeof(int));
-    memset(*val, 0.,  edges*sizeof(double));
+    memset(*val, 0,  edges*sizeof(double));
     memset(added_rows, 0.,  *N*sizeof(int));
     memset(row_counter, 0.,  (*N+1)*sizeof(int));
-        
+    
     
     while ((fscanf(fp,"%d %d", &c_indx, &r_indx)) != EOF) {
         col_counter[c_indx] ++;
@@ -65,7 +65,7 @@
     while ((fscanf(fp,"%d %d", &c_indx, &r_indx)) != EOF) {
         indx = (*row_ptr)[r_indx] + added_rows[r_indx];
         (*col_idx)[indx] = c_indx;
-        (*val)[indx] = (double) 1. /col_counter[c_indx];
+        (*val)[indx] =  (1. /col_counter[c_indx]);
         added_rows[r_indx] ++;
         counter ++;
     }    

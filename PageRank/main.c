@@ -9,7 +9,8 @@
 
 
 int main(int argc, char* argv[]){
-    double d, epsilon;
+    double epsilon;
+    double d;
     int  N, n;
     char *filename;
     int *row_ptr, *col_idx;

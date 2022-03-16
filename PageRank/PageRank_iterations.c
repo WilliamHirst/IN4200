@@ -28,7 +28,7 @@ void PageRank_iterations(int N, int *row_ptr, int *col_idx, double *val,
     int *dang_indx = malloc(nr_dang*sizeof(int));
     int counter = 0;
     
-    #pragma omp parallel
+    #pragma omp parallel if (N>1500)
     {
     #pragma omp for
     for (size_t i = 0; i < N; i++){
@@ -42,45 +42,49 @@ void PageRank_iterations(int N, int *row_ptr, int *col_idx, double *val,
     }
     }
     free(L);
-    double max_diff = epsilon*2;
-    double current_max = 10;
+
+    double max_diff = 10.0*epsilon;
+    double current_max = 0.0;
     double cur_diff = 0.0;
     double W = 0;
     double *cur_score = malloc(N*sizeof(double));
     double *prev_score = malloc(N*sizeof(double)); 
     memcpy(prev_score, scores, N*sizeof(double));
     size_t j,i,k;
-    for (k = 0; k < nr_dang; k++) W += prev_score[dang_indx[k]];
     counter = 0 ;
     int max_count = 1e6;
 
     printf("Calculating scores....\n");
     printf("- - - - - - - - - - - - - - - - - -\n");
-    #pragma omp parallel 
+    #pragma omp parallel if (N>1500)
     {
     while (max_diff > epsilon && counter < max_count)
     {
+        #pragma omp for
+        for (k = 0; k < nr_dang; k++) W += prev_score[dang_indx[k]]; 
+
         
-        #pragma omp for schedule(dynamic) reduction(max: current_max) private(i,j, cur_diff)
+        #pragma omp for schedule(auto) private(i,j, cur_diff) reduction(max: current_max)
         for (i = 0; i < N; i++)
         {  
             
             cur_score[i] = (double)(1.- d + d*W)/N;
             for (j = row_ptr[i]; j < row_ptr[i+1]; j++)
             {
-                cur_score[i] +=  d * val[j]*prev_score[col_idx[j]];
+                cur_score[i] +=  (double) d * val[j]*prev_score[col_idx[j]];
             }
             cur_diff =  fabs(cur_score[i]-prev_score[i]);
-            if (cur_diff>current_max) current_max = cur_diff;
+            if (cur_diff>current_max) current_max = cur_diff; 
         }
+        
         #pragma omp master
         { 
-            W = 0.0;
-            for (k = 0; k < nr_dang; k++) W += cur_score[dang_indx[k]]; 
-            memcpy(prev_score, cur_score, N*sizeof(double));
-            counter ++;
             max_diff = current_max;
-            current_max = 0; 
+            current_max = 0;
+            W = 0.0;
+            memcpy(prev_score, cur_score, N*sizeof(double));
+            counter ++;     
+                
         }
         #pragma omp barrier
     }
