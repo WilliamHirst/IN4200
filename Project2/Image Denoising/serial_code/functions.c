@@ -1,27 +1,55 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <functions.h>
-typedef struct
-{
-    float** image_data; /* a 2D array of floats */
-    int m; /* # pixels in vertical-direction */
-    int n; /* # pixels in horizontal-direction */
+#include "functions.h"
+
+
+void allocate_image(image *u, int m, int n){
+    u->m = m; u->n = n;
+    //Allocate the image array.
+    u->image_data = malloc(m*sizeof(float*));
+    for(int i; i<m;i++) u->image_data[i] = malloc(n*sizeof(float));
 }
-image;
 
-void allocate_image(image *u, int m, int n);
-    u.m = m; u.n = n;
-    u.image_data = malloc(n*sizeof(float*));
-    for(int i; i<n;i++) u.image_data[i] = malloc(m*sizeof(float));
+void deallocate_image(image *u){
+    //Deallocate the image array.
+    for(int i; i<u->m;i++) free(u->image_data[i]);
+    free(u->image_data)
+}
 
-void deallocate_image(image *u, int m, int n);
-    for(int i; i<n;i++) free(u.image_data[i]);
+void convert_jpeg_to_image(const unsigned char* image_chars, image *u){
+    size_t i, j;
+    //Converts jpeg-array to the image-array.
+    for (i = 0; i<u->m; i++)
+        for (j = 0; j<u->n; i++)
+            u->image_data[i][j] = image_chars[i*u->m + j];
+}
 
-void deallocate_image(image *u);
+void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
+    size_t i, j;
+    //Converts image-array to the jpeg-array.
+    for (i = 0; i<u->m; i++)
+        for (j = 0; j<u->n; i++)
+            image_chars[i*u->m + j] = u->image_data[i][j];
+}
 
-void convert_jpeg_to_image(const unsigned char* image_chars, image *u);
 
-void convert_image_to_jpeg(const image *u, unsigned char* image_chars);
-
-void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters);
-
+void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
+    size_t i, j, k;
+    int n = u->n, m = u->m;
+    float **buffer;
+    // Calculate iters # iterations of algorithm.
+    for (size_t k = 1; k<iters; k++ ){
+        for (i = 0; i<m; i++)
+            for (j = 0; j<n; j++)
+                u_bar->image_data[i][j] = u->image_data[i][j] 
+                            + kappa*(u->image_data[i-1][j] 
+                            + u->image_data[i][j-1] 
+                            - 4*u->image_data[i][j] 
+                            + u->image_data[i][j+1] 
+                            + u->image_data[i+1][j]);
+        // Update u and u_bar
+        if (k < iters-1) {
+            memcpy(&buffer, &u->image_data, sizeof u_bar->image_data);
+            memcpy(&u->image_data, &u_bar->image_data, sizeof u_bar->image_data);
+            memcpy(&u_bar->image_data, &buffer, sizeof u_bar->image_data);
+        }
+    }
+}
