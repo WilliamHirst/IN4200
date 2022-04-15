@@ -22,12 +22,14 @@ int main(int argc, char *argv[])
     allocate_image (&u, m, n);
     allocate_image (&u_bar, m, n);
     convert_jpeg_to_image (image_chars, &u);
+    printf("Calculating iterations...\n");
     iso_diffusion_denoising (&u, &u_bar, kappa, iters);
+    printf("%d iterations completed.\n", iters);
     convert_image_to_jpeg (&u_bar, image_chars);
-    exit(0);
     export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
-    exit(0);
+    printf("Denoised image exported.\n");
     deallocate_image (&u);
     deallocate_image (&u_bar);
+    printf("Finished.\n");
     return 0;
 }
