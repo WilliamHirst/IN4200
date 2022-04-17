@@ -45,8 +45,9 @@ int main(int argc, char *argv[])
     
     int *displ = malloc(num_procs*sizeof(*displ));
 
-    for(int i = 0; i < num_procs; i++){
-        displ[i] = i*chunk_sizes[i];
+    displ[0] = 0;
+    for(int i = 1; i < num_procs; i++){
+        displ[i] = i*chunk_sizes[i-1];
     }
 
     MPI_Scatterv(image_chars, my_N, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
@@ -56,11 +57,15 @@ int main(int argc, char *argv[])
 
     convert_jpeg_to_image (my_image_chars, &u);
     iso_diffusion_denoising_parallel (&u, &u_bar, kappa, iters);
+    convert_image_to_jpeg(&image_chars, &u);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    //gather image chars from each process
+    MPI_Gatherv(my_image_chars, my_N, MPI_UNSIGNED_CHAR, image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
     if (my_rank==0) {
-        convert_image_to_jpeg(&whole_image, image_chars);
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
-        deallocate_image (&whole_image);
+        deallocate_image (&image_chars);
     }
     deallocate_image (&u);
     deallocate_image (&u_bar);
