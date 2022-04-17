@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
     int m, n, c, iters;
-    int my_m, my_n, my_rank, num_procs, my_start, my_stop, my_N;
+    int my_m, my_n, my_rank, num_procs, my_N;
     float kappa;
     image u, u_bar, whole_image;
     unsigned char *image_chars, *my_image_chars;
@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
 
 
     my_N = my_m + my_n;
-    my_start = my_rank*(my_N-2)/num_procs;
-    my_stop = (my_rank+1)*(my_N-2)/num_procs;
+ 
     my_image_chars = malloc(my_N * sizeof(float));
 
     int *chunk_sizes = malloc(num_procs*sizeof(*chunk_sizes));
@@ -50,14 +49,14 @@ int main(int argc, char *argv[])
         displ[i] = i*chunk_sizes[i-1];
     }
 
-    MPI_Scatterv(image_chars, my_N, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(image_chars, &my_N, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
     
     MPI_Barrier(MPI_COMM_WORLD);
 
     convert_jpeg_to_image (my_image_chars, &u);
-    iso_diffusion_denoising_parallel (&u, &u_bar, kappa, iters);
-    convert_image_to_jpeg(&image_chars, &u);
+    iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
+    convert_image_to_jpeg(&u_bar,  my_image_chars);
 
     MPI_Barrier(MPI_COMM_WORLD);
     //gather image chars from each process
@@ -65,7 +64,7 @@ int main(int argc, char *argv[])
 
     if (my_rank==0) {
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
-        deallocate_image (&image_chars);
+        free(image_chars);
     }
     deallocate_image (&u);
     deallocate_image (&u_bar);

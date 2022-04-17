@@ -1,6 +1,8 @@
 LDFLAGS = -L../simple-jpeg/ -lsimplejpeg
 SRC 			:= $(wildcard *.c)
-FLAGS = gcc-11 -Wall -fsanitize=address
+FLAGS = mpicc  -Wall  -fsanitize=address 
+
+
 EXE = parallel_main.x
 
 all:  $(EXE) simple-jpeg execute
