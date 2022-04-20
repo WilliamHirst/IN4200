@@ -140,3 +140,5 @@ Project2/Image Denoising/serial_code/simple-jpeg/wrrle.o
 Project2/Image Denoising/serial_code/simple-jpeg/wrtarga.c
 Project2/Image Denoising/serial_code/simple-jpeg/wrtarga.o
 Project2/Image Denoising/serial_code/mona_lisa_noisy.jpeg
+Project2/Image Denoising/parallel_code/mona_lisa_noisy.jpeg
+Project2/Image Denoising/serial_code/mona_lisa_clean.jpeg

@@ -1,12 +1,11 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
-#define idx(i, j,n) i*n + j 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <mpi.h>
 
-
+#define idx(i, j,n) i*n + j 
 typedef struct
 {
     float** image_data; /* a 2D array of floats */

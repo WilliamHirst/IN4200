@@ -19,7 +19,6 @@ void convert_jpeg_to_image(const unsigned char* image_chars, image *u){
     //Converts jpeg-array to the image-array.
     for (i = 0; i<u->m; i++)
         for (j = 0; j<u->n; j++){
-            //printf("%ld, %ld \n", i,j);
             u->image_data[i][j] = image_chars[idx(i, j,u->n)];
         }
 }

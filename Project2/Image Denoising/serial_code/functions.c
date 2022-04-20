@@ -10,7 +10,7 @@ void allocate_image(image *u, int m, int n){
 
 void deallocate_image(image *u){
     //Deallocate the image array.
-    for(int i; i<u->m;i++) free(u->image_data[i]);
+    for(int i=0; i<u->m;i++) free(u->image_data[i]);
     free(u->image_data);
 }
 

@@ -2,10 +2,11 @@
 
 int main(int argc, char *argv[])
 {
+    printf("hfabdsfhbasdhfbahjsbf\n");
     int m, n, c, iters;
     int my_m, my_n, my_rank, num_procs, my_N;
     float kappa;
-    image u, u_bar, whole_image;
+    image u, u_bar;
     unsigned char *image_chars, *my_image_chars;
     char *input_jpeg_filename, *output_jpeg_filename;
     MPI_Init (&argc, &argv);
@@ -19,19 +20,18 @@ int main(int argc, char *argv[])
 
     if (my_rank==0) {
         import_JPEG_file(input_jpeg_filename, &image_chars, &m, &n, &c);
-        allocate_image (&whole_image, m, n);
     }
     MPI_Bcast (&m, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     /* 2D decomposition of the m x n pixels evenly among the MPI processes */
+    printf("hfabdsfhbasdhfbahjsbf %d\n", n);
+    exit(0);
     my_m = m/num_procs;
     my_n = n/num_procs;
     if (my_rank ==0){
         my_m += m%num_procs;
         my_n += n%num_procs;
     }
-    allocate_image (&u, my_m, my_n);
-    allocate_image (&u_bar, my_m, my_n);
 
 
     my_N = my_m + my_n;
@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     my_image_chars = malloc(my_N * sizeof(float));
 
     int *chunk_sizes = malloc(num_procs*sizeof(*chunk_sizes));
+
 
     MPI_Gather(&my_N, 1, MPI_INT, &chunk_sizes[my_rank], 1, MPI_INT, 0, MPI_COMM_WORLD);
     
@@ -53,6 +54,9 @@ int main(int argc, char *argv[])
 
     
     MPI_Barrier(MPI_COMM_WORLD);
+
+    allocate_image (&u, my_m, my_n);
+    allocate_image (&u_bar, my_m, my_n);
 
     convert_jpeg_to_image (my_image_chars, &u);
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
