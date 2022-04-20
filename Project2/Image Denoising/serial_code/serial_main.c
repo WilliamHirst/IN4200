@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "../Funcs/functions.h"
 
 
 int main(int argc, char *argv[])
@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     printf("Denoised image exported.\n");
     deallocate_image (&u);
     deallocate_image (&u_bar);
+    free(image_chars);
     printf("Finished.\n");
     return 0;
 }

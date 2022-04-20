@@ -1,22 +1,27 @@
-LDFLAGS = -L../simple-jpeg/ -lsimplejpeg -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/
+LDFLAGS = -L../simple-jpeg/ -lsimplejpeg 
 SRC 			:= $(wildcard *.c)
-FLAGS = mpicc
+OBJS = serial_main.o ../Funcs/functions.o ../Funcs/functions_p.o
+FLAGS = mpicc -Wall -fsanitize=address 
+PROJ = parallel_main
 
-EXE = parallel_main.x
+all: simple-jpeg $(PROJ) $(OBJS) execute clean
 
-all:  $(EXE) simple-jpeg execute
-
-$(EXE): $(SRC) 
-	$(FLAGS) -lm  $(SRC) -o $@ $(LDFLAGS) 
+serial_main: $(OBJS) 
+	$(FLAGS) $(OBJS) -o $@.x $(LDFLAGS) 
 
 simple-jpeg:
 	$(MAKE) -C ../simple-jpeg
 
 execute:
-	mpirun -np 4 ./parallel_main.x 0.2 20 "mona_lisa_noisy.jpeg" "mona_lisa_clean.jpeg"
+	./parallel_main.x 0.2 100 "mona_lisa_noisy.jpeg" "mona_lisa_clean.jpeg"
+
+objs-clean:
+	$(RM) *.o
+	$(RM) ../Funcs/*.o
+exec-clean:
+	$(RM) *.x
 
 clean:
-	$(MAKE) execute-clean
-	$(MAKE) $(EXE)-clean
-	$(MAKE) $(SRC)-clean
+	$(MAKE) objs-clean
+	$(MAKE) exec-clean
 	$(MAKE) -C ../simple-jpeg clean

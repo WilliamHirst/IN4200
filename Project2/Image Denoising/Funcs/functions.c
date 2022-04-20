@@ -32,21 +32,12 @@ void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
             image_chars[idx(i, j, u->n)] = u->image_data[i][j];
 }
 
-void swap( float **p, float **q )
-{
-    float *tmp = *p;
-    *p = *q;
-    *q = tmp;
-}
-
-
 
 void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
     size_t i, j, k;
     int n = u->n, m = u->m;
-    image buffer;
-    allocate_image(&buffer, m,n);
-
+    image *temp;
+    for (int i = 0; i<m; i++) memcpy(u_bar->image_data[i], u->image_data[i],n*sizeof(float));
     // Calculate iters # iterations of algorithm.
     for ( k = 1; k<iters; k++ ){
         for (i = 1; i<m-1; i++)
@@ -59,9 +50,9 @@ void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
                             + u->image_data[i+1][j]);
         // Update u and u_bar
         if (k < iters-1) {
-            swap(u->image_data, u_bar->image_data);
+            temp = u;
+            u = u_bar;
+            u_bar = temp;
         }
     }
-    deallocate_image(&buffer);
-   
 }
