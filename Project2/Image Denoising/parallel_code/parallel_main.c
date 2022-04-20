@@ -23,31 +23,32 @@ int main(int argc, char *argv[])
     }
     MPI_Bcast (&m, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    /* 2D decomposition of the m x n pixels evenly among the MPI processes */
-    
 
     my_m = m/num_procs;
     my_n = n/num_procs;
 
     int m_r = m%num_procs;
     int n_r = n%num_procs;
+    if (m_r !=0) my_n ++;
     my_m += (my_rank >= num_procs-m_r ? 1:0);
-    my_n += (my_rank >= num_procs-n_r ? 1:0);
+    //y_n += (my_rank >= num_procs-n_r ? 1:0);
     
     
     my_N = my_m * my_n;
- 
-    my_image_chars = malloc(my_N * sizeof(float));
+
+    //printf("%d , %d\n",my_n, my_rank);
+    
+    my_image_chars = malloc(my_N * sizeof(char));
 
     int *chunk_sizes = malloc(num_procs*sizeof(*chunk_sizes));
 
 
     MPI_Gather(&my_N, 1, MPI_INT, &chunk_sizes[my_rank], 1, MPI_INT, 0, MPI_COMM_WORLD);
     int *displ = malloc(num_procs*sizeof(*displ));
+    displ[0] = 0;
 
-    //displ[0] = 0;
-    for(int i = 0; i < num_procs; i++){
-        displ[i] = i*chunk_sizes[i];
+    for(int i = 1; i < num_procs; i++){
+        displ[i] = displ[i-1] + chunk_sizes[i-1];
     }
     
     MPI_Scatterv(image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
@@ -61,19 +62,22 @@ int main(int argc, char *argv[])
     
     MPI_Barrier(MPI_COMM_WORLD);
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
-    exit(0);
     convert_image_to_jpeg(&u_bar,  my_image_chars);    
-
+    
     MPI_Barrier(MPI_COMM_WORLD);
     //gather image chars from each process
     MPI_Gatherv(my_image_chars, my_N, MPI_UNSIGNED_CHAR, image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-
+    
     if (my_rank==0) {
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
         free(image_chars);
     }
+    
     deallocate_image (&u);
     deallocate_image (&u_bar);
+    free(my_image_chars);
+    free(displ);
+    free(chunk_sizes);
     MPI_Finalize ();
     return 0;
 }

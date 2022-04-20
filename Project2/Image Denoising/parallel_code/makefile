@@ -5,7 +5,7 @@ OBJS = parallel_main.o ../Funcs/functions.o ../Funcs/functions_p.o
 FLAGS = -O2 -Wall -fsanitize=address 
 
 
-all: simple-jpeg $(PROJ) $(OBJS) execute clean
+all: simple-jpeg $(PROJ) $(OBJS) execute 
 
 parallel_main: $(OBJS) 
 	$(CC) $(FLAGS) $(OBJS) -o $@.x $(LDFLAGS) 
