@@ -1,8 +1,8 @@
-#include "functions.h"
+#include "../Funcs/functions.h"
+#include "../Funcs/functions_p.h"
 
 int main(int argc, char *argv[])
 {
-    printf("hfabdsfhbasdhfbahjsbf\n");
     int m, n, c, iters;
     int my_m, my_n, my_rank, num_procs, my_N;
     float kappa;
@@ -24,17 +24,18 @@ int main(int argc, char *argv[])
     MPI_Bcast (&m, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     /* 2D decomposition of the m x n pixels evenly among the MPI processes */
-    printf("hfabdsfhbasdhfbahjsbf %d\n", n);
-    exit(0);
+    
+
     my_m = m/num_procs;
     my_n = n/num_procs;
-    if (my_rank ==0){
-        my_m += m%num_procs;
-        my_n += n%num_procs;
-    }
 
-
-    my_N = my_m + my_n;
+    int m_r = m%num_procs;
+    int n_r = n%num_procs;
+    my_m += (my_rank >= num_procs-m_r ? 1:0);
+    my_n += (my_rank >= num_procs-n_r ? 1:0);
+    
+    
+    my_N = my_m * my_n;
  
     my_image_chars = malloc(my_N * sizeof(float));
 
@@ -42,25 +43,26 @@ int main(int argc, char *argv[])
 
 
     MPI_Gather(&my_N, 1, MPI_INT, &chunk_sizes[my_rank], 1, MPI_INT, 0, MPI_COMM_WORLD);
-    
     int *displ = malloc(num_procs*sizeof(*displ));
 
-    displ[0] = 0;
-    for(int i = 1; i < num_procs; i++){
-        displ[i] = i*chunk_sizes[i-1];
+    //displ[0] = 0;
+    for(int i = 0; i < num_procs; i++){
+        displ[i] = i*chunk_sizes[i];
     }
-
-    MPI_Scatterv(image_chars, &my_N, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-
     
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Scatterv(image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    
+    
 
     allocate_image (&u, my_m, my_n);
     allocate_image (&u_bar, my_m, my_n);
 
     convert_jpeg_to_image (my_image_chars, &u);
+    
+    MPI_Barrier(MPI_COMM_WORLD);
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
-    convert_image_to_jpeg(&u_bar,  my_image_chars);
+    exit(0);
+    convert_image_to_jpeg(&u_bar,  my_image_chars);    
 
     MPI_Barrier(MPI_COMM_WORLD);
     //gather image chars from each process
