@@ -1,6 +1,6 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
-#define idx(i, j,n) i*n + j 
+#define idx(i, j,n)  i*n + j 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

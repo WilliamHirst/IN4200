@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     printf("Denoised image exported.\n");
     deallocate_image (&u);
     deallocate_image (&u_bar);
+    printf("\n %d \n", image_chars[10]);
     free(image_chars);
     printf("Finished.\n");
     return 0;

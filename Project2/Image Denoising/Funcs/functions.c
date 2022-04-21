@@ -18,10 +18,8 @@ void convert_jpeg_to_image(const unsigned char* image_chars, image *u){
     size_t i, j;
     //Converts jpeg-array to the image-array.
     for (i = 0; i<u->m; i++)
-        for (j = 0; j<u->n; j++){
-            //printf("%ld, %ld \n", i,j);
-            u->image_data[i][j] = image_chars[idx(i, j,u->n)];
-        }
+        for (j = 0; j<u->n; j++)
+            u->image_data[i][j] = (float) image_chars[idx(i, j,u->n)];
 }
 
 void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
@@ -29,7 +27,7 @@ void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
     //Converts image-array to the jpeg-array.
     for (i = 0; i<u->m; i++)
         for (j = 0; j<u->n; j++)
-            image_chars[idx(i, j, u->n)] = u->image_data[i][j];
+            image_chars[idx(i, j,u->n)] = (unsigned char) u->image_data[i][j];
 }
 
 
@@ -39,7 +37,11 @@ void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
     image *temp;
     for (int i = 0; i<m; i++) memcpy(u_bar->image_data[i], u->image_data[i],n*sizeof(float));
     // Calculate iters # iterations of algorithm.
-    for ( k = 1; k<iters; k++ ){
+    kappa = 0.2;
+    int count = 0;
+    printf("%f",kappa);
+    for ( k = 0; k<iters; k++ ){
+        count ++;
         for (i = 1; i<m-1; i++)
             for (j = 1; j<n-1; j++)
                 u_bar->image_data[i][j] = u->image_data[i][j] 

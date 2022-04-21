@@ -20,23 +20,19 @@ int main(int argc, char *argv[])
 
     if (my_rank==0) {
         import_JPEG_file(input_jpeg_filename, &image_chars, &m, &n, &c);
+        printf("JPEG imported.\n");
+        printf("Pixels -> [W: %d, H: %d]\n", m, n);
     }
     MPI_Bcast (&m, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    my_m = m/num_procs;
-    my_n = n/num_procs;
+    my_m = m/num_procs + (my_rank <= m%num_procs-1);
+    my_n = n;
 
-    int m_r = m%num_procs;
-    int n_r = n%num_procs;
-    if (m_r !=0) my_n ++;
-    my_m += (my_rank >= num_procs-m_r ? 1:0);
-    //y_n += (my_rank >= num_procs-n_r ? 1:0);
-    
-    
+    allocate_image (&u, my_m, my_n);
+    allocate_image (&u_bar, my_m, my_n);
+        
     my_N = my_m * my_n;
-
-    //printf("%d , %d\n",my_n, my_rank);
     
     my_image_chars = malloc(my_N * sizeof(char));
 
@@ -45,31 +41,33 @@ int main(int argc, char *argv[])
 
     MPI_Gather(&my_N, 1, MPI_INT, &chunk_sizes[my_rank], 1, MPI_INT, 0, MPI_COMM_WORLD);
     int *displ = malloc(num_procs*sizeof(*displ));
-    displ[0] = 0;
 
+
+    displ[0] = 0;
     for(int i = 1; i < num_procs; i++){
         displ[i] = displ[i-1] + chunk_sizes[i-1];
     }
-    
+   
+
     MPI_Scatterv(image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
     
-    
-
-    allocate_image (&u, my_m, my_n);
-    allocate_image (&u_bar, my_m, my_n);
 
     convert_jpeg_to_image (my_image_chars, &u);
     
     MPI_Barrier(MPI_COMM_WORLD);
+    if (my_rank==0) printf("Calculating iterations...\n");
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
+    if (my_rank==0) printf("%d iterations completed.\n", iters);
     convert_image_to_jpeg(&u_bar,  my_image_chars);    
     
-    MPI_Barrier(MPI_COMM_WORLD);
+
     //gather image chars from each process
     MPI_Gatherv(my_image_chars, my_N, MPI_UNSIGNED_CHAR, image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-    
+ 
+ 
     if (my_rank==0) {
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
+        printf("Denoised image exported.\n");
         free(image_chars);
     }
     
@@ -79,5 +77,7 @@ int main(int argc, char *argv[])
     free(displ);
     free(chunk_sizes);
     MPI_Finalize ();
+    if (my_rank==0) printf("\n -------* Finished *------- \n");
+
     return 0;
 }

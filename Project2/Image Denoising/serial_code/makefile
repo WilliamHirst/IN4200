@@ -13,7 +13,7 @@ simple-jpeg:
 	$(MAKE) -C ../simple-jpeg
 
 execute:
-	./serial_main.x 0.2 100 "mona_lisa_noisy.jpeg" "mona_lisa_clean.jpeg"
+	./serial_main.x 0.2 100 "mona_lisa_noisy.jpg" "mona_lisa_clean.jpg"
 
 objs-clean:
 	$(RM) *.o
@@ -24,4 +24,4 @@ exec-clean:
 clean:
 	$(MAKE) objs-clean
 	$(MAKE) exec-clean
-	$(MAKE) -C ../simple-jpeg clean
+	#$(MAKE) -C ../simple-jpeg clean

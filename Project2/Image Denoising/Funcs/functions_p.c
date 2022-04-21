@@ -4,10 +4,10 @@
 
 void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int iters, int my_rank, int num_procs){
     size_t i, j, k;
-    int n = u->n, m = u->m;
+    int n = u->n, m = u->m, isEven;
 
-    float* buffer_top = malloc(n*sizeof(*buffer_top));
-    float* buffer_bot = malloc(n*sizeof(*buffer_bot));
+    float* buffer_top = malloc(n*sizeof(float));
+    float* buffer_bot = malloc(n*sizeof(float));
     //memset(buffer_top , 0, n*sizeof(float));
     //memset(buffer_bot , 0, n*sizeof(float));
     
@@ -18,29 +18,26 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
 
     // Calculate iters # iterations of algorithm.
     for ( k = 1; k<iters; k++ ){
-        
-        if(my_rank == 0){
+        isEven = my_rank %2 == 0;
+        // Before algorithm we send and recive the row over and/or under us, differentiating
+        // if the rank is 0 (only under), even or odd (under and over) or the last rank.
+        if(isEven){
                 MPI_Send(u->image_data[m-1], n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD);
+                if (my_rank != 0 && my_rank != num_procs-1){
+                    MPI_Recv(buffer_top, n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    MPI_Send(u->image_data[0], n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD);
+                }
                 MPI_Recv(buffer_bot, n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
-        if (my_rank %2 == 0 &&  my_rank != 0 && my_rank != num_procs-1) { 
-            MPI_Send(u->image_data[m-1], n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD);
+       
+        if (!isEven || my_rank ==  num_procs-1)   { 
             MPI_Recv(buffer_top, n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Send(u->image_data[0], n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(buffer_bot, n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-        if (my_rank %2 != 0 &&  my_rank != 0 && my_rank != num_procs-1)  { 
-            MPI_Recv(buffer_top, n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Send(u->image_data[m-1], n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(buffer_bot, n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            if (my_rank != num_procs-1) {
+                MPI_Send(u->image_data[m-1], n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD);
+                MPI_Recv(buffer_bot, n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            }
             MPI_Send(u->image_data[0], n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD);
         }
-
-        if(my_rank == num_procs - 1){
-                MPI_Recv(buffer_top, n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Send(u->image_data[0], n, MPI_FLOAT, my_rank - 1, 0, MPI_COMM_WORLD);
-        }
-      
     
         for (i = 1; i<m-1; i++)
             for (j = 1; j<n-1; j++)
