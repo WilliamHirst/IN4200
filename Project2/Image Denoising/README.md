@@ -1,6 +1,6 @@
 # Image Denoising
-In this folder you will find 3 folders; serial_code, parallel_code and Funcs. Note, to run the code the folder "simple-jpeg"<br>
-must be placed inside this folder next to the other three. <br>
+In this folder you will find 3 folders; serial_code, parallel_code and Funcs. Note, to run the code, make sure the folder "simple-jpeg"<br>
+is placed inside this folder next to the other three. <br>
 
 Serial code contains a makefile, the main file which runs the code and an image ("mona_lisa_noisy").
 The make file has 6 functions. Two functions compile and make all necassary functions, both in simple-jpeg, in Funcs and in <br>
