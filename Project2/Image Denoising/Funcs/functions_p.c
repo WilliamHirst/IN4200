@@ -20,7 +20,7 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
     for ( k = 1; k<iters; k++ ){
         isEven = my_rank %2 == 0;
         // Before algorithm we send and recive the row over and/or under us, differentiating
-        // if the rank is 0 (only under), even or odd (under and over) or the last rank.
+        // if the rank is 0 (only under), even or odd (under and over) or the last rank(only over).
         if(isEven){
                 MPI_Send(u->image_data[m-1], n, MPI_FLOAT, my_rank + 1, 0, MPI_COMM_WORLD);
                 if (my_rank != 0 && my_rank != num_procs-1){
@@ -47,7 +47,7 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
                             - 4*u->image_data[i][j] 
                             + u->image_data[i][j+1] 
                             + u->image_data[i+1][j]);
-
+        // For all but the first rank we use the halos to fill in all borders over. 
         if (my_rank > 0) {
             for (j = 1; j<n-1; j++)
                 u_bar->image_data[0][j] = u->image_data[0][j] 
@@ -57,6 +57,7 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
                             + u->image_data[0][j+1] 
                             + u->image_data[1][j]);
         }
+        // For all but the last rank we use the halos to fill in all borders under. 
         if (my_rank < num_procs-1) {
             for (j = 1; j<n-1; j++)
                 u_bar->image_data[m-1][j] = u->image_data[m-1][j] 

@@ -36,41 +36,39 @@ int main(int argc, char *argv[])
     
     my_image_chars = malloc(my_N * sizeof(char));
 
+    //Create variables for scatter of image_chars.
     int *chunk_sizes = malloc(num_procs*sizeof(*chunk_sizes));
-
-
     MPI_Gather(&my_N, 1, MPI_INT, &chunk_sizes[my_rank], 1, MPI_INT, 0, MPI_COMM_WORLD);
+
     int *displ = malloc(num_procs*sizeof(*displ));
-
-
     displ[0] = 0;
     for(int i = 1; i < num_procs; i++){
         displ[i] = displ[i-1] + chunk_sizes[i-1];
     }
-   
-
+    
     MPI_Scatterv(image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, my_image_chars, my_N, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
     
 
     convert_jpeg_to_image (my_image_chars, &u);
-    
     MPI_Barrier(MPI_COMM_WORLD);
+
+    //Calculate the algorithm.
     if (my_rank==0) printf("Calculating iterations...\n");
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, my_rank, num_procs);
-    if (my_rank==0) printf("%d iterations completed.\n", iters);
-    convert_image_to_jpeg(&u_bar,  my_image_chars);    
+    if (my_rank==0) printf("%d iterations completed.\n", iters);    
     
-
-    //gather image chars from each process
+    //Convert to jpeg and gather image_chars from each process
+    convert_image_to_jpeg(&u_bar,  my_image_chars);
     MPI_Gatherv(my_image_chars, my_N, MPI_UNSIGNED_CHAR, image_chars, chunk_sizes, displ, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
- 
- 
+    
+    //Export full image_chars to output file.
     if (my_rank==0) {
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
         printf("Denoised image exported.\n");
         free(image_chars);
     }
     
+    //Free upp all arrays.
     deallocate_image (&u);
     deallocate_image (&u_bar);
     free(my_image_chars);

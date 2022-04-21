@@ -34,14 +34,12 @@ void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
 void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
     size_t i, j, k;
     int n = u->n, m = u->m;
+    //Create temporary buffer.
     image *temp;
+    //Copy u to u_bar to set boundaries.
     for (int i = 0; i<m; i++) memcpy(u_bar->image_data[i], u->image_data[i],n*sizeof(float));
     // Calculate iters # iterations of algorithm.
-    kappa = 0.2;
-    int count = 0;
-    printf("%f",kappa);
     for ( k = 0; k<iters; k++ ){
-        count ++;
         for (i = 1; i<m-1; i++)
             for (j = 1; j<n-1; j++)
                 u_bar->image_data[i][j] = u->image_data[i][j] 
@@ -50,7 +48,7 @@ void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters){
                             - 4*u->image_data[i][j] 
                             + u->image_data[i][j+1] 
                             + u->image_data[i+1][j]);
-        // Update u and u_bar
+        // Update u and u_bar for all but last iteration.
         if (k < iters-1) {
             temp = u;
             u = u_bar;
