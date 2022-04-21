@@ -14,7 +14,7 @@ simple-jpeg:
 	$(MAKE) -C ../simple-jpeg
 
 execute:
-	mpirun -np 4 ./parallel_main.x 0.2 100 "mona_lisa_noisy.jpg" "mona_lisa_clean.jpg"
+	mpirun -np 4 ./parallel_main.x 0.2 10 "mona_lisa_noisy.jpg" "mona_lisa_clean.jpg"
 
 objs-clean:
 	$(RM) *.o
